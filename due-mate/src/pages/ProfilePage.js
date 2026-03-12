@@ -179,8 +179,8 @@ const ProfilePage = () => {
         .profile-container-wrapper {
           min-height: 100vh;
           padding: 100px 2rem 4rem;
-          background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.05), transparent),
-                      radial-gradient(circle at bottom left, rgba(79, 70, 229, 0.05), transparent),
+          background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.03), transparent),
+                      radial-gradient(circle at bottom left, rgba(79, 70, 229, 0.03), transparent),
                       var(--bg-color);
           display: flex;
           justify-content: center;
@@ -188,104 +188,94 @@ const ProfilePage = () => {
 
         .profile-content-inner {
           width: 100%;
-          max-width: 800px;
+          max-width: 720px;
           display: flex;
           flex-direction: column;
-          gap: 2rem;
+          gap: 1.5rem;
         }
 
         .profile-page-header {
           display: flex;
           flex-direction: column;
           align-items: flex-start;
-          gap: 0.75rem;
+          gap: 0.5rem;
         }
 
         .back-button-modern {
           display: flex;
           align-items: center;
           gap: 0.5rem;
-          padding: 0.5rem 1rem;
+          padding: 0.4rem 0.8rem;
           background: var(--surface-color);
           border: 1px solid var(--border-color);
-          border-radius: 12px;
+          border-radius: 10px;
           color: var(--text-secondary);
           font-weight: 500;
-          font-size: 0.9rem;
+          font-size: 0.85rem;
           cursor: pointer;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          transition: all 0.2s ease;
         }
 
         .back-button-modern:hover {
-          transform: translateX(-4px);
           color: var(--primary-color);
           border-color: var(--primary-color);
-          box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
+          background: rgba(99, 102, 241, 0.02);
         }
 
         .profile-main-title {
-          font-size: 2.5rem;
-          font-weight: 800;
-          letter-spacing: -0.02em;
+          font-size: 2rem;
+          font-weight: 700;
+          letter-spacing: -0.01em;
           color: var(--text-primary);
           margin: 0;
         }
 
         .profile-glass-card {
           background: var(--surface-color);
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
           border: 1px solid var(--border-color);
-          border-radius: 24px;
-          padding: 3rem;
-          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+          border-radius: 20px;
+          padding: 2.5rem;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
           position: relative;
-          overflow: hidden;
         }
 
         .profile-hero-section {
           display: flex;
           align-items: center;
-          gap: 2.5rem;
-          margin-bottom: 3rem;
+          gap: 2rem;
+          margin-bottom: 2.5rem;
         }
 
         .profile-avatar-wrapper {
           position: relative;
-          width: 120px;
-          height: 120px;
+          width: 100px;
+          height: 100px;
         }
 
         .profile-avatar-main {
           width: 100%;
           height: 100%;
-          border-radius: 32px;
+          border-radius: 28px;
           background: linear-gradient(135deg, var(--primary-color), #4f46e5);
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 3.5rem;
+          font-size: 3rem;
           font-weight: 700;
           color: white;
-          box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+          box-shadow: 0 8px 16px rgba(99, 102, 241, 0.2);
           position: relative;
           z-index: 2;
         }
 
         .profile-avatar-glow {
           position: absolute;
-          inset: -10px;
+          inset: -5px;
           background: var(--primary-color);
-          filter: blur(20px);
-          opacity: 0.2;
-          border-radius: 40px;
+          filter: blur(15px);
+          opacity: 0.1;
+          border-radius: 32px;
           z-index: 1;
-          animation: pulse-glow 4s infinite alternate;
-        }
-
-        @keyframes pulse-glow {
-          from { opacity: 0.1; transform: scale(0.95); }
-          to { opacity: 0.3; transform: scale(1.05); }
         }
 
         .profile-meta-info {
@@ -293,62 +283,62 @@ const ProfilePage = () => {
         }
 
         .profile-name-display {
-          font-size: 2rem;
+          font-size: 1.75rem;
           font-weight: 700;
           color: var(--text-primary);
-          margin: 0 0 0.5rem 0;
+          margin: 0 0 0.4rem 0;
         }
 
         .profile-email-badge {
           display: inline-flex;
           align-items: center;
-          gap: 0.5rem;
-          padding: 0.4rem 1rem;
-          background: rgba(99, 102, 241, 0.1);
-          color: var(--primary-color);
+          gap: 0.4rem;
+          padding: 0.35rem 0.85rem;
+          background: var(--bg-color);
+          border: 1px solid var(--border-color);
+          color: var(--text-secondary);
           border-radius: 100px;
-          font-size: 0.9rem;
+          font-size: 0.85rem;
           font-weight: 500;
         }
 
         .edit-action-btn {
           display: flex;
           align-items: center;
-          gap: 0.6rem;
-          padding: 0.75rem 1.5rem;
+          gap: 0.5rem;
+          padding: 0.6rem 1.25rem;
           background: var(--surface-color);
           border: 1px solid var(--border-color);
-          border-radius: 14px;
+          border-radius: 12px;
           color: var(--text-primary);
           font-weight: 600;
+          font-size: 0.9rem;
           cursor: pointer;
-          transition: all 0.3s;
+          transition: all 0.2s;
         }
 
         .edit-action-btn:hover {
-          background: var(--primary-color);
-          color: white;
-          border-color: var(--primary-color);
-          transform: translateY(-2px);
-          box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
+          background: var(--bg-color);
+          border-color: var(--text-primary);
         }
 
         .profile-divider {
           height: 1px;
-          background: linear-gradient(to right, var(--border-color), transparent);
-          margin-bottom: 2.5rem;
+          background: var(--border-color);
+          opacity: 0.5;
+          margin-bottom: 2rem;
         }
 
         .profile-form-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 2rem;
+          gap: 1.5rem;
         }
 
         .form-group-modern {
           display: flex;
           flex-direction: column;
-          gap: 0.75rem;
+          gap: 0.5rem;
         }
 
         .form-group-modern.full-width {
@@ -356,45 +346,43 @@ const ProfilePage = () => {
         }
 
         .input-label-premium {
-          font-size: 0.75rem;
-          font-weight: 700;
+          font-size: 0.7rem;
+          font-weight: 600;
           text-transform: uppercase;
-          letter-spacing: 0.1em;
+          letter-spacing: 0.05em;
           color: var(--text-tertiary);
         }
 
         .profile-form-footer {
           display: flex;
           justify-content: flex-end;
-          gap: 1rem;
-          margin-top: 3rem;
-          padding-top: 2rem;
+          gap: 0.75rem;
+          margin-top: 2.5rem;
+          padding-top: 1.5rem;
           border-top: 1px solid var(--border-color);
         }
 
         .btn-modern {
           display: flex;
           align-items: center;
-          gap: 0.75rem;
-          padding: 0.875rem 1.75rem;
-          border-radius: 14px;
+          gap: 0.6rem;
+          padding: 0.75rem 1.5rem;
+          border-radius: 12px;
           font-weight: 600;
-          font-size: 0.95rem;
+          font-size: 0.9rem;
           cursor: pointer;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          transition: all 0.2s ease;
         }
 
         .btn-modern.primary {
           background: var(--primary-color);
           color: white;
           border: none;
-          box-shadow: 0 8px 16px rgba(99, 102, 241, 0.2);
         }
 
         .btn-modern.primary:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 12px 24px rgba(99, 102, 241, 0.3);
           background: #4f46e5;
+          transform: translateY(-1px);
         }
 
         .btn-modern.secondary {
@@ -404,43 +392,43 @@ const ProfilePage = () => {
         }
 
         .btn-modern.secondary:hover {
-          background: rgba(0, 0, 0, 0.02);
+          background: var(--bg-color);
           color: var(--text-primary);
           border-color: var(--text-primary);
         }
 
         .animate-in {
-          animation: slide-up 0.4s ease-out forwards;
+          animation: fade-in-up 0.3s ease-out forwards;
         }
 
-        @keyframes slide-up {
-          from { opacity: 0; transform: translateY(10px); }
+        @keyframes fade-in-up {
+          from { opacity: 0; transform: translateY(5px); }
           to { opacity: 1; transform: translateY(0); }
         }
 
         .profile-alert {
-          padding: 1rem 1.5rem;
-          border-radius: 12px;
-          margin-bottom: 2rem;
+          padding: 0.85rem 1.25rem;
+          border-radius: 10px;
+          margin-bottom: 1.5rem;
           font-weight: 500;
-          font-size: 0.95rem;
+          font-size: 0.9rem;
         }
 
         .profile-alert.error {
-          background: rgba(239, 68, 68, 0.1);
-          color: #ef4444;
-          border: 1px solid rgba(239, 68, 68, 0.2);
+          background: rgba(239, 68, 68, 0.08);
+          color: #dc2626;
+          border: 1px solid rgba(239, 68, 68, 0.15);
         }
 
         .profile-alert.success {
-          background: rgba(34, 197, 94, 0.1);
-          color: #22c55e;
-          border: 1px solid rgba(34, 197, 94, 0.2);
+          background: rgba(34, 197, 94, 0.08);
+          color: #16a34a;
+          border: 1px solid rgba(34, 197, 94, 0.15);
         }
 
         .spinner-small {
-          width: 18px;
-          height: 18px;
+          width: 16px;
+          height: 16px;
           border: 2px solid rgba(255, 255, 255, 0.3);
           border-top-color: white;
           border-radius: 50%;
