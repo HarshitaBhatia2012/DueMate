@@ -26,12 +26,18 @@ export const authService = {
     return response.data;
   },
   login: async (username, password) => {
-    const formData = new FormData();
-    formData.append('username', username);
-    formData.append('password', password);
-    const response = await api.post('/token', formData);
-    return response.data;
-  },
+  const params = new URLSearchParams();
+  params.append("username", username);
+  params.append("password", password);
+
+  const response = await api.post("/token", params, {
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+  });
+
+  return response.data;
+},
   getCurrentUser: async () => {
     const response = await api.get('/users/me');
     return response.data;
