@@ -5,9 +5,12 @@ from sqlalchemy.orm import Session
 from datetime import timedelta
 from jose import JWTError, jwt
 
-from . import models, schemas, auth, database
-from .database import engine, get_db
-from .auth import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
+import models
+import schemas
+import auth
+import database
+from database import engine, get_db
+from auth import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
 
 # Create database tables
 models.Base.metadata.create_all(bind=engine)
