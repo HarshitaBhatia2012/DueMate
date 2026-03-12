@@ -28,6 +28,7 @@ async def log_requests(request, call_next):
 origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "https://due-mate-pi.vercel.app"
 ]
 
 app.add_middleware(
