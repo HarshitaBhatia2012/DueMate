@@ -1,9 +1,11 @@
 import React from 'react';
-import { Calendar, Clock, BookOpen, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Calendar, Clock, BookOpen, AlertCircle, CheckCircle2, Trash2 } from 'lucide-react';
 import { format, isPast, isToday, isTomorrow, formatDistanceToNow } from 'date-fns';
+import { useAssignments } from '../context/AssignmentContext';
 import '../styles/AssignmentCard.css';
 
 const AssignmentCard = ({ assignment, onStatusToggle }) => {
+  const { deleteAssignment } = useAssignments();
   const { id, title, description, subject, due_date, status } = assignment;
   
   const dateObj = new Date(due_date);
@@ -26,9 +28,22 @@ const AssignmentCard = ({ assignment, onStatusToggle }) => {
           <BookOpen size={14} />
           {subject}
         </span>
-        <div className={`status-badge ${normalizedStatus}`}>
-          {isPending ? <Clock size={14} /> : <CheckCircle2 size={14} />}
-          <span>{status.charAt(0).toUpperCase() + status.slice(1)}</span>
+        <div className="card-header-actions">
+          <div className={`status-badge ${normalizedStatus}`}>
+            {isPending ? <Clock size={14} /> : <CheckCircle2 size={14} />}
+            <span>{status.charAt(0).toUpperCase() + status.slice(1)}</span>
+          </div>
+          <button 
+            className="delete-card-btn" 
+            onClick={() => {
+              if (window.confirm('Are you sure you want to delete this assignment?')) {
+                deleteAssignment(id);
+              }
+            }}
+            title="Delete Assignment"
+          >
+            <Trash2 size={16} />
+          </button>
         </div>
       </div>
       
