@@ -1,49 +1,10 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React from 'react';
+import { SignUp } from '@clerk/clerk-react';
+import { Link } from 'react-router-dom';
 import { CheckSquare } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import FormInput from '../components/FormInput';
-import '../styles/LoginPage.css'; // Reuse Login styles for container
+import '../styles/LoginPage.css';
 
 const SignupPage = () => {
-  const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
-  });
-  const [error, setError] = useState('');
-  const { register } = useAuth();
-  const navigate = useNavigate();
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.id]: e.target.value
-    });
-  };
-
-  const handleSignup = async (e) => {
-    e.preventDefault();
-    setError('');
-
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match.');
-      return;
-    }
-
-    try {
-      await register({
-        username: formData.username,
-        email: formData.email,
-        password: formData.password
-      });
-      navigate('/login', { state: { message: 'Registration successful! Please login.' } });
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
   return (
     <div className="login-page">
       <div className="login-container">
@@ -55,59 +16,34 @@ const SignupPage = () => {
           <p className="login-subtitle">Join DueMate to start mastering your deadlines.</p>
         </div>
         
-        <form className="login-form card" onSubmit={handleSignup}>
-          {error && <div className="form-error-banner">{error}</div>}
-          
-          <FormInput
-            id="username"
-            label="Username"
-            placeholder="johndoe"
-            value={formData.username}
-            onChange={handleChange}
-            required
+        <div className="clerk-auth-wrapper">
+          <SignUp 
+            routing="path" 
+            path="/signup" 
+            signInUrl="/login"
+            fallbackRedirectUrl="/dashboard"
           />
-
-          <FormInput
-            id="email"
-            type="email"
-            label="Email address"
-            placeholder="name@example.com"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-          
-          <FormInput
-            id="password"
-            type="password"
-            label="Password"
-            placeholder="••••••••"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-
-          <FormInput
-            id="confirmPassword"
-            type="password"
-            label="Confirm Password"
-            placeholder="••••••••"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            required
-          />
-          
-          <button type="submit" className="btn btn-primary login-btn">
-            Create account
-          </button>
-        </form>
+        </div>
         
         <p className="login-footer">
           Already have an account? <Link to="/login" className="signup-link">Sign in</Link>
         </p>
       </div>
+      
+      <style>{`
+        .clerk-auth-wrapper {
+          display: flex;
+          justify-content: center;
+          margin-top: 2rem;
+        }
+        .clerk-auth-wrapper > div {
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+          border-radius: 12px;
+        }
+      `}</style>
     </div>
   );
 };
 
 export default SignupPage;
+

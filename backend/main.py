@@ -29,8 +29,10 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
+        "http://127.0.0.1:3000",
         "https://due-mate-pi.vercel.app"
     ],
+
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -98,18 +100,64 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None:
+        # First, try to verify as a Clerk token
+        payload = await auth.verify_clerk_token(token)
+        clerk_id: str = payload.get("sub")
+        email: str = payload.get("email") # Clerk session tokens usually include email
+        
+        if clerk_id is None:
             raise credentials_exception
-        token_data = schemas.TokenData(username=username)
-    except JWTError:
-        raise credentials_exception
-    user = db.query(models.User).filter(models.User.username == token_data.username).first()
-    if user is None:
-        raise credentials_exception
-    return user
+            
+        # 1. Try to find by clerk_id
+        user = db.query(models.User).filter(models.User.clerk_id == clerk_id).first()
+        
+        # 2. If not found, try to find by email and link them
+        if not user and email:
+            user = db.query(models.User).filter(models.User.email == email).first()
+            if user:
+                user.clerk_id = clerk_id
+                db.commit()
+                db.refresh(user)
+        
+        # 3. If still not found, create a new user
+        if not user:
+            # Generate a unique username if not provided or taken
+            base_username = email.split('@')[0] if email else f"user_{clerk_id[:8]}"
+            username = base_username
+            counter = 1
+            while db.query(models.User).filter(models.User.username == username).first():
+                username = f"{base_username}_{counter}"
+                counter += 1
+                
+            user = models.User(
+                clerk_id=clerk_id,
+                email=email,
+                username=username,
+                hashed_password=None # Clerk users don't have local passwords
+            )
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+            
+        return user
+        
+    except Exception as clerk_err:
+        print(f"Clerk verification failed or error: {clerk_err}")
+        # Fallback to legacy JWT verification
+        try:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            username: str = payload.get("sub")
+            if username is None:
+                raise credentials_exception
+            user = db.query(models.User).filter(models.User.username == username).first()
+            if user is None:
+                raise credentials_exception
+            return user
+        except JWTError:
+            raise credentials_exception
+
 
 @app.get("/users/me", response_model=schemas.UserResponse)
 async def read_users_me(current_user: models.User = Depends(get_current_user)):

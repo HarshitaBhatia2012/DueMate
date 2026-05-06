@@ -25,7 +25,11 @@ def create_db_if_not_exists():
 import pymysql
 
 def ensure_db_exists():
+    if SQLALCHEMY_DATABASE_URL and SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
+        print("Using SQLite - database file will be created automatically.")
+        return
     try:
+
         url = SQLALCHEMY_DATABASE_URL.replace("mysql+pymysql://", "")
         auth, rest = url.split("@")
         user, password = auth.split(":")
@@ -46,7 +50,11 @@ def ensure_db_exists():
 
 ensure_db_exists()
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+if SQLALCHEMY_DATABASE_URL and SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
+    engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+else:
+    engine = create_engine(SQLALCHEMY_DATABASE_URL)
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()

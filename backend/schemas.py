@@ -33,7 +33,9 @@ class TokenData(BaseModel):
 # Assignment Schemas
 class AssignmentBase(BaseModel):
     title: str
+    subject: Optional[str] = None
     description: Optional[str] = None
+
     due_date: datetime
     status: Optional[str] = "pending"
     is_favorite: Optional[bool] = False

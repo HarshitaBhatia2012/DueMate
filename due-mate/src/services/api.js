@@ -1,17 +1,27 @@
 import axios from 'axios';
 
-const API_URL = 'https://duemate-o7m9.onrender.com';
+const API_URL = 'http://127.0.0.1:8000';
 
 const api = axios.create({
   baseURL: API_URL,
 });
 
+let authToken = localStorage.getItem('duemate_token');
+
+export const setAuthToken = (token) => {
+  authToken = token;
+  if (token) {
+    localStorage.setItem('duemate_token', token);
+  } else {
+    localStorage.removeItem('duemate_token');
+  }
+};
+
 // Add a request interceptor to include the JWT token in all requests
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('duemate_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    if (authToken) {
+      config.headers.Authorization = `Bearer ${authToken}`;
     }
     return config;
   },
@@ -19,6 +29,7 @@ api.interceptors.request.use(
     return Promise.reject(error);
   }
 );
+
 
 export const authService = {
   signup: async (userData) => {

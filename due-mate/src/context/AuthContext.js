@@ -1,75 +1,61 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import { authService } from '../services/api';
+import React, { createContext, useContext, useEffect } from 'react';
+import { useAuth as useClerkAuth, useUser } from '@clerk/clerk-react';
+import { setAuthToken } from '../services/api';
 
 const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const { isLoaded: isAuthLoaded, isSignedIn, signOut, getToken } = useClerkAuth();
+  const { isLoaded: isUserLoaded, user } = useUser();
+
+  const loading = !isAuthLoaded || !isUserLoaded;
 
   useEffect(() => {
-    const initAuth = async () => {
-      const token = localStorage.getItem('duemate_token');
-      if (token) {
-        try {
-          const userData = await authService.getCurrentUser();
-          setUser(userData);
-          setIsAuthenticated(true);
-        } catch (error) {
-          console.error('Failed to fetch user', error);
-          localStorage.removeItem('duemate_token');
-          setIsAuthenticated(false);
-        }
+    const updateToken = async () => {
+      if (isSignedIn) {
+        const token = await getToken();
+        setAuthToken(token);
+      } else {
+        setAuthToken(null);
       }
-      setLoading(false);
     };
-    initAuth();
-  }, []);
+    updateToken();
+  }, [isSignedIn, getToken]);
 
-  const login = async (username, password) => {
-    try {
-      const data = await authService.login(username, password);
-      localStorage.setItem('duemate_token', data.access_token);
-      const userData = await authService.getCurrentUser();
-      setUser(userData);
-      setIsAuthenticated(true);
-      return true;
-    } catch (error) {
-      throw new Error(error.response?.data?.detail || 'Login failed');
-    }
+  const login = async () => {
+    window.location.href = '/login';
   };
 
-  const register = async (userData) => {
-    try {
-      await authService.signup(userData);
-      return true;
-    } catch (error) {
-      console.error('Registration error details:', error.response?.data);
-      const detail = error.response?.data?.detail;
-      let errorMessage = 'Registration failed';
-      
-      if (typeof detail === 'string') {
-        errorMessage = detail;
-      } else if (Array.isArray(detail)) {
-        errorMessage = detail[0]?.msg || 'Invalid data provided';
-      }
-      
-      throw new Error(errorMessage);
-    }
+  const register = async () => {
+    window.location.href = '/signup';
   };
 
-  const logout = () => {
-    setUser(null);
-    setIsAuthenticated(false);
-    localStorage.removeItem('duemate_token');
+  const logout = async () => {
+    await signOut();
+    setAuthToken(null);
+  };
+
+  const value = {
+    isAuthenticated: isSignedIn,
+    user: user ? {
+      username: user.username || user.firstName || 'User',
+      email: user.primaryEmailAddress?.emailAddress,
+      avatar: user.imageUrl,
+      ...user
+    } : null,
+    login,
+    register,
+    logout,
+    loading
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, setUser, login, register, logout, loading }}>
-      {!loading && children}
+    <AuthContext.Provider value={value}>
+      {children}
     </AuthContext.Provider>
   );
 };
+
+
