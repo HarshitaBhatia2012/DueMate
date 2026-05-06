@@ -2,11 +2,10 @@ httpx
 fastapi
 uvicorn
 sqlalchemy
-mysql-connector-python
 python-multipart
 python-jose[cryptography]
 passlib[bcrypt]
 bcrypt==4.0.1
-pymysql
 python-dotenv
 pydantic[email]
+psycopg2-binary
