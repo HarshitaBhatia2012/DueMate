@@ -10,10 +10,7 @@ load_dotenv(dotenv_path=env_path)
 SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
 
 # Supabase/PostgreSQL engine
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL,
-    connect_args={"sslmode": "require"}
-)
+engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
 SessionLocal = sessionmaker(
     autocommit=False,
