@@ -6,22 +6,19 @@ const api = axios.create({
   baseURL: API_URL,
 });
 
-let authToken = localStorage.getItem('duemate_token');
-
-export const setAuthToken = (token) => {
-  authToken = token;
-  if (token) {
-    localStorage.setItem('duemate_token', token);
-  } else {
-    localStorage.removeItem('duemate_token');
-  }
-};
-
-// Add a request interceptor to include the JWT token in all requests
+// Configure Axios to automatically attach the Clerk session token
 api.interceptors.request.use(
-  (config) => {
-    if (authToken) {
-      config.headers.Authorization = `Bearer ${authToken}`;
+  async (config) => {
+    // If Clerk is initialized and user is signed in, fetch the fresh token
+    if (window.Clerk && window.Clerk.session) {
+      try {
+        const token = await window.Clerk.session.getToken();
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+      } catch (err) {
+        console.error("Failed to get Clerk token:", err);
+      }
     }
     return config;
   },
@@ -30,25 +27,7 @@ api.interceptors.request.use(
   }
 );
 
-
 export const authService = {
-  signup: async (userData) => {
-    const response = await api.post('/signup', userData);
-    return response.data;
-  },
-  login: async (username, password) => {
-    const params = new URLSearchParams();
-    params.append("username", username);
-    params.append("password", password);
-
-    const response = await api.post("/token", params, {
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-    });
-
-    return response.data;
-  },
   getCurrentUser: async () => {
     const response = await api.get('/users/me');
     return response.data;

@@ -1,16 +1,12 @@
 from fastapi import FastAPI, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from datetime import timedelta
-from jose import JWTError, jwt
 
 import models
 import schemas
 import auth
-import database
 from database import engine, get_db
-from auth import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
 
 # Create database tables
 models.Base.metadata.create_all(bind=engine)
@@ -38,63 +34,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+security = HTTPBearer()
 
-# Authentication Endpoints
-@app.post("/signup", response_model=schemas.UserResponse)
-def signup(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    print(f"Signup attempt for: {user.username} ({user.email})")
-    db_user = db.query(models.User).filter(models.User.email == user.email).first()
-    if db_user:
-        print(f"Signup failed: Email {user.email} already exists")
-        raise HTTPException(status_code=400, detail="Email already registered")
-    
-    db_username = db.query(models.User).filter(models.User.username == user.username).first()
-    if db_username:
-        print(f"Signup failed: Username {user.username} already exists")
-        raise HTTPException(status_code=400, detail="Username already taken")
-
-    hashed_password = auth.get_password_hash(user.password)
-    new_user = models.User(
-        username=user.username,
-        email=user.email,
-        hashed_password=hashed_password
-    )
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-    print(f"User {user.username} created successfully!")
-    return new_user
-
-@app.post("/token", response_model=schemas.Token)
-def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    print(f"Login attempt for username: {form_data.username}")
-    user = db.query(models.User).filter(models.User.username == form_data.username).first()
-    
-    if not user:
-        print(f"Login failed: User {form_data.username} not found")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
-    if not auth.verify_password(form_data.password, user.hashed_password):
-        print(f"Login failed: Incorrect password for user {form_data.username}")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
-    print(f"Login successful for user: {form_data.username}")
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = auth.create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires
-    )
-    return {"access_token": access_token, "token_type": "bearer"}
-
-async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+# Authentication Dependency
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -102,10 +45,11 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
     )
     
     try:
-        # First, try to verify as a Clerk token
+        # Verify Clerk token
+        token = credentials.credentials
         payload = await auth.verify_clerk_token(token)
         clerk_id: str = payload.get("sub")
-        email: str = payload.get("email") # Clerk session tokens usually include email
+        email: str = payload.get("email", "")
         
         if clerk_id is None:
             raise credentials_exception
@@ -113,7 +57,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
         # 1. Try to find by clerk_id
         user = db.query(models.User).filter(models.User.clerk_id == clerk_id).first()
         
-        # 2. If not found, try to find by email and link them
+        # 2. If not found, try to find by email and link them (migration logic)
         if not user and email:
             user = db.query(models.User).filter(models.User.email == email).first()
             if user:
@@ -134,8 +78,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
             user = models.User(
                 clerk_id=clerk_id,
                 email=email,
-                username=username,
-                hashed_password=None # Clerk users don't have local passwords
+                username=username
             )
             db.add(user)
             db.commit()
@@ -145,18 +88,8 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
         
     except Exception as clerk_err:
         print(f"Clerk verification failed or error: {clerk_err}")
-        # Fallback to legacy JWT verification
-        try:
-            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-            username: str = payload.get("sub")
-            if username is None:
-                raise credentials_exception
-            user = db.query(models.User).filter(models.User.username == username).first()
-            if user is None:
-                raise credentials_exception
-            return user
-        except JWTError:
-            raise credentials_exception
+        raise credentials_exception
+
 
 
 @app.get("/users/me", response_model=schemas.UserResponse)
@@ -178,9 +111,6 @@ async def update_user_me(user_update: schemas.UserUpdate, current_user: models.U
         if existing_user:
             raise HTTPException(status_code=400, detail="Email already registered")
         current_user.email = user_update.email
-    
-    if user_update.password:
-        current_user.hashed_password = auth.get_password_hash(user_update.password)
         
     db.commit()
     db.refresh(current_user)

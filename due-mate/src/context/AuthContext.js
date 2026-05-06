@@ -1,28 +1,15 @@
-import React, { createContext, useContext, useEffect } from 'react';
+import React, { createContext, useContext } from 'react';
 import { useAuth as useClerkAuth, useUser } from '@clerk/clerk-react';
-import { setAuthToken } from '../services/api';
 
 const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  const { isLoaded: isAuthLoaded, isSignedIn, signOut, getToken } = useClerkAuth();
+  const { isLoaded: isAuthLoaded, isSignedIn, signOut } = useClerkAuth();
   const { isLoaded: isUserLoaded, user } = useUser();
 
   const loading = !isAuthLoaded || !isUserLoaded;
-
-  useEffect(() => {
-    const updateToken = async () => {
-      if (isSignedIn) {
-        const token = await getToken();
-        setAuthToken(token);
-      } else {
-        setAuthToken(null);
-      }
-    };
-    updateToken();
-  }, [isSignedIn, getToken]);
 
   const login = async () => {
     window.location.href = '/login';
@@ -34,7 +21,6 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     await signOut();
-    setAuthToken(null);
   };
 
   const value = {
@@ -57,5 +43,3 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
-
-
